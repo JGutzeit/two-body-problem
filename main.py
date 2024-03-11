@@ -37,13 +37,13 @@ vx_erde = 0
 # (diese geschwindigkeit kannst du gerne variieren), (in metern die sekunde)
 
 # wahre geschwindigkeit, sehr Kreisfoermiger Orbit
-# vy_erde = 7660  
+vy_erde = 7660  
 
 # Einschlag nach ca 3/8 des Wegs.
 # vy_erde = 7660 * 0.984 
 
 # Stark elliptischer Orbit, mit mehr als 10 Tage Periode und erreicht in etwa den Mond
-# vy_erde = 7660 * 1.403
+#vy_erde = 7660 * 1.403
 
 # beschleunigung des umkreisenden Körpers auf der x-Achse
 # (immer auf null setzen, da wir annehmen
