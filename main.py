@@ -2,13 +2,12 @@ import math
 import time
 import matplotlib.pyplot as plt
 from datetime import datetime, timedelta
-
+from tqdm import tqdm
 
 # DIE DINGE UNTEN SIND VERÄNDERBAR (JETZT SIND SIE AUF DIE ISS EINGESTELLT)
-# Simulierte Zeit in Jahren
-Relative_Zeit_Jahre = 1
+Simulierte_Zeit_in_Jahren = 1/12./4.3
 # Genutzte Zahl nahe der kleinen Unendlichkeit
-intervall = 0.0001
+simuliertes_intervall_in_Sekunden = 1
 # Die Masse des schwereren der beiden Objekte (in KG)
 M = 5.972 * (10 ** 24)
 # Die Masse des leichteren der beiden Objekte (ISS), (in KG)
@@ -24,7 +23,7 @@ Sonne_Durchmesser = 12756000
 # entfernung des umkreisenden Objektes (hier die ISS), (in metern),
 # (es ist etwas komlexer als das, weil wir mit x und y koordinaten arbeiten,
 # aber wenn du es machst wie ich es sage stimmt es trotzdem)
-x_erde = 408000 + (Sonne_Durchmesser)
+x_erde = 408000 + (Sonne_Durchmesser / 2)
 # Anfangs Position (y),
 # (ich würde die y Position immer auf null setzen, da die beschleunigungen sonst
 # ebenfalls verändert werden müssten),
@@ -36,7 +35,16 @@ vx_erde = 0
 # Anfängliche Geschwindigkeit des umkreisenden Körpers auf der y-Achse
 # (hier ist die geschwindigkeit der ISS eingegeben),
 # (diese geschwindigkeit kannst du gerne variieren), (in metern die sekunde)
-vy_erde = 7660
+
+# wahre geschwindigkeit, sehr Kreisfoermiger Orbit
+# vy_erde = 7660  
+
+# Einschlag nach ca 3/8 des Wegs.
+# vy_erde = 7660 * 0.984 
+
+# Stark elliptischer Orbit, mit mehr als 10 Tage Periode und erreicht in etwa den Mond
+# vy_erde = 7660 * 1.403
+
 # beschleunigung des umkreisenden Körpers auf der x-Achse
 # (immer auf null setzen, da wir annehmen
 # der Körper hat die Terminale Geschwindigkeit erreicht), (in metern die sekunde)
@@ -46,20 +54,27 @@ ax_erde = 0
 # der Körper hat die Terminale Geschwindigkeit erreicht), (in metern die sekunde)
 ay_erde = 0
 
+# Distanz zwischen ISS mittelpunkt und Erdmittelpunkt am Anfang
+dist_erde = x_erde
+
 
 # DIE DINGE UNTEN NICHT VERÄNDERN
-Relative_Zeit = (
-    Relative_Zeit_Jahre * 31536000
-)  # Simulierte Zeit umgerechnet in Sekunden
-seconds = Relative_Zeit
-jahre = seconds // 31536000
-seconds = seconds % 31536000
-days = seconds // 86400
-seconds = seconds % 86400
-hours = seconds // 3600
-leftover_seconds = seconds % 3600
-minutes = leftover_seconds // 60
-final_seconds = leftover_seconds % 60
+# Anzahl_Sekunden_pro_Jahr = 31557600   # Wenn man 100 Jahre mittelt
+Anzahl_Sekunden_pro_Jahr = 31536000   # Wenn man genau 365 Tage annimmt.
+Anzahl_Sekunden_pro_Tag = 86400 
+Anzahl_Sekunden_pro_Stunde = 3600
+Anzahl_Sekunden_pro_Minute = 60
+
+Simulierte_Zeit_in_Sekunden = Simulierte_Zeit_in_Jahren * Anzahl_Sekunden_pro_Jahr
+seconds = Simulierte_Zeit_in_Sekunden
+jahre = seconds // Anzahl_Sekunden_pro_Jahr
+seconds = seconds % Anzahl_Sekunden_pro_Jahr
+days = seconds // Anzahl_Sekunden_pro_Tag
+seconds = seconds % Anzahl_Sekunden_pro_Tag
+hours = seconds // Anzahl_Sekunden_pro_Stunde
+leftover_seconds = seconds % Anzahl_Sekunden_pro_Stunde
+minutes = leftover_seconds // Anzahl_Sekunden_pro_Minute
+final_seconds = leftover_seconds % Anzahl_Sekunden_pro_Minute
 print(
     "Zeitspanne der Relativen Zeit",
     "=",
@@ -74,52 +89,45 @@ print(
     final_seconds,
     "sekunden",
 )
-a = 0  # messung der durchlebten Zeit Ableitungen
-Gesamt_Intervalle = Relative_Zeit / intervall  # sekunde
+Anzahl_simulations_schritte = int(Simulierte_Zeit_in_Sekunden / simuliertes_intervall_in_Sekunden)
+print(f"Anzahl_simulations_schritte:{Anzahl_simulations_schritte}")
+
 X_Achse = []
 Y_Achse = []
-try:
-    while True:
-        if a > Gesamt_Intervalle:
-            plt.plot(X_Achse, Y_Achse)
-            plt.axhline(0, color="black", linewidth=0.5)
-            plt.axvline(0, color="black", linewidth=0.5)
-            plt.text(0, 0, "Erde", ha="right", va="bottom")
-            plt.title("Iss Laufbahn")
-            plt.xlabel("X (m)")
-            plt.ylabel("Y (m)")
-            # Kleiner Ball an koordinate 0/0 um den Schweren Körper zu simbolisieren
-            plt.scatter(0, 0, color="green", marker="o", s=25)
-            plt.show()
-            break
-        if (
-            abs(x_erde) <= (Satellit_Durchmesser + Sonne_Durchmesser) * 0.5
-            and abs(y_erde) <= (Satellit_Durchmesser + Sonne_Durchmesser) * 0.5
-        ):
-            print("Kollision bei Relativer Zeit=", a * intervall)
-            plt.plot(X_Achse, Y_Achse)
-            plt.axhline(0, color="black", linewidth=0.5)
-            plt.axvline(0, color="black", linewidth=0.5)
-            plt.text(0, 0, "Erde", ha="right", va="bottom")
-            plt.title("Iss Laufbahn")
-            plt.xlabel("X (m)")
-            plt.ylabel("Y (m)")
-            plt.scatter(0, 0, color="red", marker="o", s=25)
-            plt.show()
-            break
-        else:
-            r = (x_erde ** 2 + y_erde ** 2) ** 0.5
-            a_erde = (G * (M + m)) / r ** 2
-            ax_erde = (-x_erde * (M + m) * G) / r ** 3
-            ay_erde = (-y_erde * (M + m) * G) / r ** 3
-            vx_erde = vx_erde + ax_erde * intervall
-            vy_erde = vy_erde + ay_erde * intervall
-            x_erde = x_erde + vx_erde * intervall
-            y_erde = y_erde + vy_erde * intervall
-            X_Achse.append(x_erde)
-            Y_Achse.append(y_erde)
-            a = a + intervall
-            time.sleep(0.0000000001)
-except KeyboardInterrupt:
-    print("Abgebrochen")
-    time.sleep(3)
+ist_eingeschlagen = False
+for i in tqdm(range(Anzahl_simulations_schritte)):
+    r = math.sqrt(x_erde ** 2 + y_erde ** 2)
+    a_erde = (G * (M + m)) / r ** 2
+    ax_erde = -x_erde/r * a_erde
+    ay_erde = -y_erde/r * a_erde
+    vx_erde += ax_erde * simuliertes_intervall_in_Sekunden
+    vy_erde += ay_erde * simuliertes_intervall_in_Sekunden
+    x_erde += vx_erde * simuliertes_intervall_in_Sekunden
+    y_erde += vy_erde * simuliertes_intervall_in_Sekunden
+
+    X_Achse.append(x_erde)
+    Y_Achse.append(y_erde)
+
+    if r <= (Satellit_Durchmesser + Sonne_Durchmesser) * 0.5:
+        ist_eingeschlagen = True
+        print("Kollision bei Relativer Zeit=", i * simuliertes_intervall_in_Sekunden)
+        break
+
+plt.plot(X_Achse, Y_Achse)
+plt.axhline(0, color="black", linewidth=0.5)
+plt.axvline(0, color="black", linewidth=0.5)
+plt.text(0, 0, "Erde", ha="right", va="bottom")
+plt.title("Iss Laufbahn")
+plt.xlabel("X (m)")
+plt.ylabel("Y (m)")
+# Kleiner Ball an koordinate 0/0 um den Schweren Körper zu simbolisieren
+
+if ist_eingeschlagen:
+    circle = plt.Circle((0, 0), Sonne_Durchmesser/2, color='red')
+else:
+    circle = plt.Circle((0, 0), Sonne_Durchmesser/2, color='blue')
+
+plt.gca().axis("equal")  # Seitenverhaeltis 1:1
+plt.gca().add_patch(circle)
+plt.grid()
+plt.show()
