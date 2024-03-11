@@ -1,7 +1,5 @@
 import math
-import time
 import matplotlib.pyplot as plt
-from datetime import datetime, timedelta
 from tqdm import tqdm
 
 # DIE DINGE UNTEN SIND VERÄNDERBAR (JETZT SIND SIE AUF DIE ISS EINGESTELLT)
