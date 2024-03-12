@@ -58,24 +58,23 @@ X_Achse = []
 Y_Achse = []
 ist_eingeschlagen = False
 Anzahl_simulations_schritte = int(Simulierte_Zeit / simuliertes_intervall)
+dt = simuliertes_intervall.total_seconds()
 for i in tqdm(range(Anzahl_simulations_schritte)):
     r = math.sqrt(x_erde ** 2 + y_erde ** 2)
     a_erde = (G * (M + m)) / r ** 2
     ax_erde = -x_erde / r * a_erde
     ay_erde = -y_erde / r * a_erde
-    vx_erde += ax_erde * simuliertes_intervall.total_seconds()
-    vy_erde += ay_erde * simuliertes_intervall.total_seconds()
-    x_erde += vx_erde * simuliertes_intervall.total_seconds()
-    y_erde += vy_erde * simuliertes_intervall.total_seconds()
+    vx_erde += ax_erde * dt
+    vy_erde += ay_erde * dt
+    x_erde += vx_erde * dt
+    y_erde += vy_erde * dt
 
     X_Achse.append(x_erde)
     Y_Achse.append(y_erde)
 
     if r <= (Satellit_Durchmesser + Sonne_Durchmesser) * 0.5:
         ist_eingeschlagen = True
-        print(
-            "Kollision bei Relativer Zeit=", i * simuliertes_intervall.total_seconds()
-        )
+        print("Kollision bei Relativer Zeit=", i * dt)
         break
 
 plt.plot(X_Achse, Y_Achse)
