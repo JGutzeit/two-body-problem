@@ -37,10 +37,10 @@ vx_erde = 0
 # (diese geschwindigkeit kannst du gerne variieren), (in metern die sekunde)
 
 # wahre geschwindigkeit, sehr Kreisfoermiger Orbit
-# vy_erde = 7660  
+# vy_erde = 7660
 
 # Einschlag nach ca 3/8 des Wegs.
-# vy_erde = 7660 * 0.984 
+# vy_erde = 7660 * 0.984
 
 # Stark elliptischer Orbit, mit mehr als 10 Tage Periode und erreicht in etwa den Mond
 vy_erde = 7660 * 1.403
@@ -61,8 +61,8 @@ Anzahl_simulations_schritte = int(Simulierte_Zeit / simuliertes_intervall)
 for i in tqdm(range(Anzahl_simulations_schritte)):
     r = math.sqrt(x_erde ** 2 + y_erde ** 2)
     a_erde = (G * (M + m)) / r ** 2
-    ax_erde = -x_erde/r * a_erde
-    ay_erde = -y_erde/r * a_erde
+    ax_erde = -x_erde / r * a_erde
+    ay_erde = -y_erde / r * a_erde
     vx_erde += ax_erde * simuliertes_intervall.total_seconds()
     vy_erde += ay_erde * simuliertes_intervall.total_seconds()
     x_erde += vx_erde * simuliertes_intervall.total_seconds()
@@ -73,7 +73,9 @@ for i in tqdm(range(Anzahl_simulations_schritte)):
 
     if r <= (Satellit_Durchmesser + Sonne_Durchmesser) * 0.5:
         ist_eingeschlagen = True
-        print("Kollision bei Relativer Zeit=", i * simuliertes_intervall.total_seconds())
+        print(
+            "Kollision bei Relativer Zeit=", i * simuliertes_intervall.total_seconds()
+        )
         break
 
 plt.plot(X_Achse, Y_Achse)
@@ -84,6 +86,12 @@ plt.title("Iss Laufbahn")
 plt.xlabel("X (m)")
 plt.ylabel("Y (m)")
 plt.gca().axis("equal")  # Seitenverhaeltis 1:1
-plt.gca().add_patch(plt.Circle((0, 0), Sonne_Durchmesser/2, color='blue' if not ist_eingeschlagen else "red"))
+plt.gca().add_patch(
+    plt.Circle(
+        xy=(0, 0),
+        radius=Sonne_Durchmesser / 2,
+        color="blue" if not ist_eingeschlagen else "red",
+    )
+)
 plt.grid()
 plt.show()
