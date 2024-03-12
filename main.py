@@ -1,11 +1,13 @@
 import math
 import matplotlib.pyplot as plt
 from tqdm import tqdm
+from datetime import timedelta
 
 # DIE DINGE UNTEN SIND VERÄNDERBAR (JETZT SIND SIE AUF DIE ISS EINGESTELLT)
-Simulierte_Zeit_in_Jahren = 1/12./4.3
+Simulierte_Zeit = timedelta(days=12)
+print(f"Simulierte_Zeit: {Simulierte_Zeit}")
 # Genutzte Zahl nahe der kleinen Unendlichkeit
-simuliertes_intervall_in_Sekunden = 1
+simuliertes_intervall = timedelta(seconds=1)
 # Die Masse des schwereren der beiden Objekte (in KG)
 M = 5.972 * (10 ** 24)
 # Die Masse des leichteren der beiden Objekte (ISS), (in KG)
@@ -35,13 +37,13 @@ vx_erde = 0
 # (diese geschwindigkeit kannst du gerne variieren), (in metern die sekunde)
 
 # wahre geschwindigkeit, sehr Kreisfoermiger Orbit
-vy_erde = 7660  
+# vy_erde = 7660  
 
 # Einschlag nach ca 3/8 des Wegs.
 # vy_erde = 7660 * 0.984 
 
 # Stark elliptischer Orbit, mit mehr als 10 Tage Periode und erreicht in etwa den Mond
-#vy_erde = 7660 * 1.403
+vy_erde = 7660 * 1.403
 
 # beschleunigung des umkreisenden Körpers auf der x-Achse
 # (immer auf null setzen, da wir annehmen
@@ -52,63 +54,26 @@ ax_erde = 0
 # der Körper hat die Terminale Geschwindigkeit erreicht), (in metern die sekunde)
 ay_erde = 0
 
-# Distanz zwischen ISS mittelpunkt und Erdmittelpunkt am Anfang
-dist_erde = x_erde
-
-
-# DIE DINGE UNTEN NICHT VERÄNDERN
-# Anzahl_Sekunden_pro_Jahr = 31557600   # Wenn man 100 Jahre mittelt
-Anzahl_Sekunden_pro_Jahr = 31536000   # Wenn man genau 365 Tage annimmt.
-Anzahl_Sekunden_pro_Tag = 86400 
-Anzahl_Sekunden_pro_Stunde = 3600
-Anzahl_Sekunden_pro_Minute = 60
-
-Simulierte_Zeit_in_Sekunden = Simulierte_Zeit_in_Jahren * Anzahl_Sekunden_pro_Jahr
-seconds = Simulierte_Zeit_in_Sekunden
-jahre = seconds // Anzahl_Sekunden_pro_Jahr
-seconds = seconds % Anzahl_Sekunden_pro_Jahr
-days = seconds // Anzahl_Sekunden_pro_Tag
-seconds = seconds % Anzahl_Sekunden_pro_Tag
-hours = seconds // Anzahl_Sekunden_pro_Stunde
-leftover_seconds = seconds % Anzahl_Sekunden_pro_Stunde
-minutes = leftover_seconds // Anzahl_Sekunden_pro_Minute
-final_seconds = leftover_seconds % Anzahl_Sekunden_pro_Minute
-print(
-    "Zeitspanne der Relativen Zeit",
-    "=",
-    jahre,
-    "jahre",
-    days,
-    "tage",
-    hours,
-    "stunden",
-    minutes,
-    "minuten",
-    final_seconds,
-    "sekunden",
-)
-Anzahl_simulations_schritte = int(Simulierte_Zeit_in_Sekunden / simuliertes_intervall_in_Sekunden)
-print(f"Anzahl_simulations_schritte:{Anzahl_simulations_schritte}")
-
 X_Achse = []
 Y_Achse = []
 ist_eingeschlagen = False
+Anzahl_simulations_schritte = int(Simulierte_Zeit / simuliertes_intervall)
 for i in tqdm(range(Anzahl_simulations_schritte)):
     r = math.sqrt(x_erde ** 2 + y_erde ** 2)
     a_erde = (G * (M + m)) / r ** 2
     ax_erde = -x_erde/r * a_erde
     ay_erde = -y_erde/r * a_erde
-    vx_erde += ax_erde * simuliertes_intervall_in_Sekunden
-    vy_erde += ay_erde * simuliertes_intervall_in_Sekunden
-    x_erde += vx_erde * simuliertes_intervall_in_Sekunden
-    y_erde += vy_erde * simuliertes_intervall_in_Sekunden
+    vx_erde += ax_erde * simuliertes_intervall.total_seconds()
+    vy_erde += ay_erde * simuliertes_intervall.total_seconds()
+    x_erde += vx_erde * simuliertes_intervall.total_seconds()
+    y_erde += vy_erde * simuliertes_intervall.total_seconds()
 
     X_Achse.append(x_erde)
     Y_Achse.append(y_erde)
 
     if r <= (Satellit_Durchmesser + Sonne_Durchmesser) * 0.5:
         ist_eingeschlagen = True
-        print("Kollision bei Relativer Zeit=", i * simuliertes_intervall_in_Sekunden)
+        print("Kollision bei Relativer Zeit=", i * simuliertes_intervall.total_seconds())
         break
 
 plt.plot(X_Achse, Y_Achse)
@@ -118,14 +83,7 @@ plt.text(0, 0, "Erde", ha="right", va="bottom")
 plt.title("Iss Laufbahn")
 plt.xlabel("X (m)")
 plt.ylabel("Y (m)")
-# Kleiner Ball an koordinate 0/0 um den Schweren Körper zu simbolisieren
-
-if ist_eingeschlagen:
-    circle = plt.Circle((0, 0), Sonne_Durchmesser/2, color='red')
-else:
-    circle = plt.Circle((0, 0), Sonne_Durchmesser/2, color='blue')
-
 plt.gca().axis("equal")  # Seitenverhaeltis 1:1
-plt.gca().add_patch(circle)
+plt.gca().add_patch(plt.Circle((0, 0), Sonne_Durchmesser/2, color='blue' if not ist_eingeschlagen else "red"))
 plt.grid()
 plt.show()
